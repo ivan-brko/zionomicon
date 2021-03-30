@@ -18,15 +18,16 @@ object PromiseBasicSpec extends DefaultRunnableSpec {
   def spec: ZSpec[Environment, Failure] =
     suite("Basic promise code")(
       // testM("Die") {
-      //   for {
+      //   val output = for {
       //     promise <- Promise.make[Nothing, Unit]
       //     last    <- (promise.await *> console.putStr("2")).fork
       //     _       <- (console.putStr("1")) *> promise.die(new RuntimeException("Killed the promise!")).fork
       //     _       <- last.join
-      //     output  <- TestConsole.output
-      //   } yield assert(output)(equalTo(Vector("1", "2")))
+      //     output  <- TestConsole.output.run.sandbox
+      //   } yield output
+      //   assertM(output)(fails(anything))
       // },
-      testM("First") {
+      testM("Awaiting the promise") {
         for {
           promise <- Promise.make[Nothing, Unit]
           last    <- (promise.await *> console.putStr("2")).fork
@@ -35,7 +36,7 @@ object PromiseBasicSpec extends DefaultRunnableSpec {
           output  <- TestConsole.output
         } yield assert(output)(equalTo(Vector("1", "2")))
       } @@ nonFlaky,
-      testM("Complete") {
+      testM("Completing the promise with .complete") {
         for {
           p <- Promise.make[Nothing, Int]
           _ <- p.complete(Helpers.randomInt)
@@ -43,7 +44,7 @@ object PromiseBasicSpec extends DefaultRunnableSpec {
           r <- p.await
         } yield assert(l)(equalTo(r))
       },
-      testM("CompleteWith") {
+      testM("Completing the promise with .completeWith") {
         for {
           p <- Promise.make[Nothing, Int]
           _ <- p.completeWith(Helpers.randomInt)
@@ -52,39 +53,4 @@ object PromiseBasicSpec extends DefaultRunnableSpec {
         } yield assert(l)(not(equalTo(r)))
       }
     )
-
-  //   // suite("Promise - die")(
-  //   //   testM("First") {
-  //   //     for {
-  //   //       promise <- Promise.make[Nothing, Unit]
-  //   //       last    <- (promise.await *> console.putStr("2")).fork
-  //   //       _       <- (console.putStr("1")) *> promise.die(new RuntimeException("Killed the promise!")).fork
-  //   //       _       <- last.join
-  //   //       output  <- TestConsole.output
-  //   //     } yield assert(output)(equalTo(Vector("1", "2")))
-  //   //   }
-  //   // )
-
-  //   suite("Complete")(
-  //     testM("Complete") {
-  //       for {
-  //         p <- Promise.make[Nothing, Int]
-  //         _ <- p.complete(Helpers.randomInt)
-  //         l <- p.await
-  //         r <- p.await
-  //       } yield assert(l)(equalTo(r))
-  //     }
-  //   )
-  //   suite("CompleteWith")(
-  //     testM("CompleteWith") {
-  //       for {
-  //         p <- Promise.make[Nothing, Int]
-  //         _ <- p.completeWith(Helpers.randomInt)
-  //         l <- p.await
-  //         r <- p.await
-  //       } yield assert(l)(not(equalTo(r)))
-  //     }
-  //   )
-  // } @@ jvmOnly
-
 }
